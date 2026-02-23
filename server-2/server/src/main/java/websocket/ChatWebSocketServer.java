@@ -86,7 +86,7 @@ public class ChatWebSocketServer extends WebSocketServer {
             String clientIp = conn.getRemoteSocketAddress().getAddress().getHostAddress();
             String routingKey = "room." + roomId;
 
-            // map ChatMessage + metadata → MessageEnvelope
+            // map MessageEnvelope
             MessageEnvelope envelope = new MessageEnvelope(
                     UUID.randomUUID().toString(),
                     roomId,
@@ -102,13 +102,12 @@ public class ChatWebSocketServer extends WebSocketServer {
             // serialize envelope to JSON
             byte[] body = JsonUtil.toJson(envelope).getBytes(StandardCharsets.UTF_8);
 
-            // set deliveryMode=2 (persistent — survives RabbitMQ restart)
+            // set deliveryMode=2, survives RabbitMQ restart)
             AMQP.BasicProperties props = new AMQP.BasicProperties.Builder()
                     .deliveryMode(2)
                     .contentType("application/json")
                     .build();
 
-            // borrow channel → publish → always return
             Channel channel = rabbitMQConnectionManager.borrowChannel();
             try {
                 channel.basicPublish(EXCHANGE_NAME, routingKey, props, body);
@@ -154,5 +153,9 @@ public class ChatWebSocketServer extends WebSocketServer {
             }
         }
         return null;
+    }
+
+    public Map<WebSocket, String> getRoomMapping() {
+        return roomMapping;
     }
 }

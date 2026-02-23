@@ -18,10 +18,16 @@ public class RabbitMQConnectionManager {
     private static final long INITIAL_BACKOFF_MS = 1000;
 
     private final String host;
+    private final int port;
+    private final String username;
+    private final String password;
     private final int poolSize;
 
-    public RabbitMQConnectionManager(String host, int poolSize) throws Exception {
+    public RabbitMQConnectionManager(String host, int port, String username, String password, int poolSize) throws Exception {
         this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
         this.poolSize = poolSize;
         connectWithBackoff();
     }
@@ -38,11 +44,14 @@ public class RabbitMQConnectionManager {
 
                 ConnectionFactory factory = new ConnectionFactory();
                 factory.setHost(host);
+                factory.setPort(port);
+                factory.setUsername(username);
+                factory.setPassword(password);
                 this.connection = factory.newConnection();
 
                 BlockingQueue<Channel> newPool = new ArrayBlockingQueue<>(poolSize);
                 for (int i = 0; i < poolSize; i++) {
-                    channelPool.add(connection.createChannel());
+                    newPool.add(connection.createChannel());
                 }
                 this.channelPool = newPool;
 
