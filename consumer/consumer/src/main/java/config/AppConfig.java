@@ -30,45 +30,55 @@ public class AppConfig {
 
     // RabbitMQ
     public String getRabbitMQHost() {
-        return props.getProperty("rabbitmq.host", "localhost");
+        String env = System.getenv("RABBITMQ_HOST");
+        return env != null ? env : props.getProperty("rabbitmq.host", "localhost");
     }
 
     public int getRabbitMQPort() {
-        return Integer.parseInt(props.getProperty("rabbitmq.port", "5672"));
+        String env = System.getenv("RABBITMQ_PORT");
+        return Integer.parseInt(env != null ? env : props.getProperty("rabbitmq.port", "5672"));
     }
 
     public String getRabbitMQUsername() {
-        return props.getProperty("rabbitmq.username", "admin");
+        String env = System.getenv("RABBITMQ_USERNAME");
+        return env != null ? env : props.getProperty("rabbitmq.username", "admin");
     }
 
     public String getRabbitMQPassword() {
-        return props.getProperty("rabbitmq.password", "rabbitmq");
+        String env = System.getenv("RABBITMQ_PASSWORD");
+        return env != null ? env : props.getProperty("rabbitmq.password", "rabbitmq");
     }
 
     public String getRabbitMQVirtualHost() {
-        return props.getProperty("rabbitmq.virtualhost", "/");
+        String env = System.getenv("RABBITMQ_VIRTUALHOST");
+        return env != null ? env : props.getProperty("rabbitmq.virtualhost", "/");
     }
 
     public long getRabbitMQReconnectDelayMs() {
-        return Long.parseLong(props.getProperty("rabbitmq.reconnect.delay.ms", "5000"));
+        String env = System.getenv("RABBITMQ_RECONNECT_DELAY_MS");
+        return Long.parseLong(env != null ? env : props.getProperty("rabbitmq.reconnect.delay.ms", "5000"));
     }
 
     // Redis
 
     public String getRedisHost() {
-        return props.getProperty("redis.host", "localhost");
+        String env = System.getenv("REDIS_HOST");
+        return env != null ? env : props.getProperty("redis.host", "localhost");
     }
 
     public int getRedisPort() {
-        return Integer.parseInt(props.getProperty("redis.port", "6379"));
+        String env = System.getenv("REDIS_PORT");
+        return Integer.parseInt(env != null ? env : props.getProperty("redis.port", "6379"));
     }
 
     public String getRedisPassword() {
-        return props.getProperty("redis.password", "");
+        String env = System.getenv("REDIS_PASSWORD");
+        return env != null ? env : props.getProperty("redis.password", "");
     }
 
     public int getDedupTtlSeconds() {
-        return Integer.parseInt(props.getProperty("redis.dedup.ttl.seconds", "86400"));
+        String env = System.getenv("REDIS_DEDUP_TTL_SECONDS");
+        return Integer.parseInt(env != null ? env : props.getProperty("redis.dedup.ttl.seconds", "86400"));
     }
 
     // Part 1 Broadcast Callback
@@ -79,28 +89,32 @@ public class AppConfig {
      * Example: http://10.0.1.5:8081/internal/broadcast
      */
     public String getPart1BroadcastUrl() {
-        return props.getProperty("part1.broadcast.url", "http://localhost:8081/internal/broadcast");
+        String env = System.getenv("PART1_BROADCAST_URL");
+        return env != null ? env : props.getProperty("part1.broadcast.url", "http://localhost:8081/internal/broadcast");
     }
 
     // Consumer Pool
 
     public int getConsumerThreadCount() {
-        return Integer.parseInt(props.getProperty("consumer.thread.count", "4"));
+        String env = System.getenv("CONSUMER_THREAD_COUNT");
+        return Integer.parseInt(env != null ? env : props.getProperty("consumer.thread.count", "4"));
     }
 
     // Health Check
 
     public int getHealthCheckPort() {
-        return Integer.parseInt(props.getProperty("healthcheck.port", "8082"));
+        String env = System.getenv("HEALTHCHECK_PORT");
+        return Integer.parseInt(env != null ? env : props.getProperty("healthcheck.port", "8082"));
     }
 
     // Message Processing
-
     public int getMessageRetryMax() {
-        return Integer.parseInt(props.getProperty("message.retry.max", "3"));
+        String env = System.getenv("MESSAGE_RETRY_MAX");
+        return Integer.parseInt(env != null ? env : props.getProperty("message.retry.max", "3"));
     }
 
     public long getMessageRetryDelayMs() {
-        return Long.parseLong(props.getProperty("message.retry.delay.ms", "500"));
+        String env = System.getenv("MESSAGE_RETRY_DELAY_MS");
+        return Long.parseLong(env != null ? env : props.getProperty("message.retry.delay.ms", "500"));
     }
 }

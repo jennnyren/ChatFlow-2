@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A single consumer thread that owns a fixed set of RabbitMQ room queues.
+ * A single consumer thread.
  *
  * For each assigned room:
- * - Subscribes to the room's queue (queue name = roomId, matching Part 1's routing)
- * - On each message: deserialize → dedup → RoomManager → ack/nack
+ * Subscribes to the room's queue
+ * On each message: deserialize → dedup → RoomManager → ack/nack
  *
  * One thread per set of rooms guarantees in-order delivery within each room
  * (since RabbitMQ queues are FIFO and basicQos=1 means one unacked message at a time).

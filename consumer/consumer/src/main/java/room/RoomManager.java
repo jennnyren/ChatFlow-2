@@ -9,7 +9,7 @@ import websocket.WebSocketBroadcaster;
 /**
  * Routes a consumed message to the WebSocketBroadcaster with retry logic.
  *
- * Pipeline position: Consumer → RoomManager → WebSocketBroadcaster → Part 1 HTTP → browsers
+ * Pipeline position: Consumer → RoomManager → WebSocketBroadcaster → Part 1 HTTP
  *
  * Responsibilities:
  * - Validate the message has a roomId

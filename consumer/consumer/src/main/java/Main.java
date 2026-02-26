@@ -15,9 +15,6 @@ import java.util.List;
 /**
  * Part 2 entry point.
  *
- * Much simpler than the original design — no WebSocket server here.
- * Part 1 owns browser connections. Part 2 is a pure background worker.
- *
  * Startup sequence:
  * 1. Load config
  * 2. Initialize DeduplicationService (Redis)
@@ -30,7 +27,6 @@ import java.util.List;
  * Usage:
  *   java -jar consumer.jar
  *   java -jar consumer.jar --config /etc/consumer/config.properties
- *   java -jar consumer.jar --config /etc/consumer/config.properties --rooms room1,room2,room3
  */
 public class Main {
 
