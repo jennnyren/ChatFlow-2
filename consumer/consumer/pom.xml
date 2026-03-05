@@ -9,8 +9,6 @@
   <packaging>jar</packaging>
 
   <name>consumer</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
 
   <properties>
     <java.version>17</java.version>
@@ -106,8 +104,7 @@
         </descriptorRefs>
         <archive>
           <manifest>
-            <!-- Update this if you rename / move Main.java -->
-            <mainClass>com.example.app.Main</mainClass>
+            <mainClass>Main</mainClass>
           </manifest>
         </archive>
         <!-- Produce:  rabbitmq-ws-bridge-1.0-SNAPSHOT-jar-with-dependencies.jar -->
