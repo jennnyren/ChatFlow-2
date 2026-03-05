@@ -1,5 +1,6 @@
 package worker;
 
+import metrics.MetricsCollector;
 import model.ChatMessage;
 import model.MessageRound;
 import util.JsonUtil;
@@ -15,16 +16,19 @@ public class RetryWorker implements Runnable {
     private final ConnectionPool connectionPool;
     private final AtomicInteger successCount;
     private final AtomicInteger failureCount;
+    private final MetricsCollector metricsCollector;
     private volatile boolean running = true;
 
     public RetryWorker(BlockingQueue<MessageRound> retryQueue,
                        ConnectionPool connectionPool,
                        AtomicInteger successCount,
-                       AtomicInteger failureCount) {
+                       AtomicInteger failureCount,
+                       MetricsCollector metricsCollector) {
         this.retryQueue = retryQueue;
         this.connectionPool = connectionPool;
         this.successCount = successCount;
         this.failureCount = failureCount;
+        this.metricsCollector = metricsCollector;
     }
 
     @Override
@@ -67,6 +71,13 @@ public class RetryWorker implements Runnable {
             }
 
             for (ChatMessage message : round.getMessages()) {
+                if (metricsCollector != null) {
+                    metricsCollector.recordMessageSent(
+                            message.getMessageType(),
+                            round.getRoomId()
+                    );
+                }
+
                 String json = JsonUtil.toJson(message);
                 client.send(json);
                 client.incrementMessagesSent();

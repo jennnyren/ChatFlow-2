@@ -1,5 +1,5 @@
 import rabbitmq.RabbitMQConnectionManager;
-import websocket.BroadcastHttpServer;
+import websocket.HttpServer;
 import websocket.ChatWebSocketServer;
 
 /**
@@ -21,7 +21,7 @@ public class Main {
         System.out.println("=== Chat Server (Part 1) Starting ===");
 
         RabbitMQConnectionManager rabbitMQConnectionManager = new RabbitMQConnectionManager(
-                "98.91.238.216",
+                "172.31.47.205",
                 5672,
                 "admin",
                 "rabbitmq",
@@ -39,7 +39,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        BroadcastHttpServer broadcastHttpServer = new BroadcastHttpServer(
+        HttpServer broadcastHttpServer = new HttpServer(
                 BROADCAST_HTTP_PORT, webSocketServer.getRoomMapping());
         broadcastHttpServer.start();
         System.out.println("Broadcast HTTP server started on port " + BROADCAST_HTTP_PORT);

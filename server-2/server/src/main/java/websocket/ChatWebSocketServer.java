@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatWebSocketServer extends WebSocketServer {
 
     private static final String EXCHANGE_NAME = "chat.exchange";
-    private final Map<WebSocket, String> roomMapping;
+    private final ConcurrentHashMap<WebSocket, String> roomMapping;
     private final RabbitMQConnectionManager rabbitMQConnectionManager;
 
     /**
@@ -155,7 +155,7 @@ public class ChatWebSocketServer extends WebSocketServer {
         return null;
     }
 
-    public Map<WebSocket, String> getRoomMapping() {
+    public ConcurrentHashMap<WebSocket, String> getRoomMapping() {
         return roomMapping;
     }
 }

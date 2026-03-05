@@ -1,5 +1,6 @@
 package worker;
 
+import metrics.MetricsCollector;
 import model.ChatMessage;
 import model.ChatResponse;
 import model.MessageRound;
@@ -18,6 +19,7 @@ public class SenderWorker implements Runnable {
     private final AtomicInteger successCount;
     private final AtomicInteger failureCount;
     private final int roundsToSend;
+    private final MetricsCollector metricsCollector;
     private volatile boolean running = true;
 
     public SenderWorker (BlockingQueue<MessageRound> roundQueue,
@@ -25,13 +27,15 @@ public class SenderWorker implements Runnable {
                          ConnectionPool connectionPool,
                          AtomicInteger successCount,
                          AtomicInteger failureCount,
-                         int roundsToSend) {
+                         int roundsToSend,
+                         MetricsCollector metricsCollector) {
         this.roundQueue = roundQueue;
         this.retryQueue = retryQueue;
         this.connectionPool = connectionPool;
         this.successCount = successCount;
         this.failureCount = failureCount;
         this.roundsToSend = roundsToSend;
+        this.metricsCollector = metricsCollector;
     }
 
     @Override
@@ -77,6 +81,13 @@ public class SenderWorker implements Runnable {
             }
 
             for (ChatMessage message : round.getMessages()) {
+                if (metricsCollector != null) {
+                    metricsCollector.recordMessageSent(
+                            message.getMessageType(),
+                            round.getRoomId()
+                    );
+                }
+
                 String json = JsonUtil.toJson(message);
                 client.send(json);
                 client.incrementMessagesSent();
@@ -95,7 +106,6 @@ public class SenderWorker implements Runnable {
             return false;
         }
     }
-
     public void shutdown() {
         running = false;
     }

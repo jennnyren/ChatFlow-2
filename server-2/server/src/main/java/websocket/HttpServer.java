@@ -3,7 +3,6 @@ package websocket;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
 import org.java_websocket.WebSocket;
 
 import java.io.IOException;
@@ -12,43 +11,37 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Internal HTTP server that Part 2 (the consumer) calls to trigger broadcasts.
- *
- * Runs on port 8081 — separate from the WebSocket server on 8080.
- * NOT exposed to the public internet — internal network only.
- *
+ * Internal HTTP server that part2 calls to trigger broadcasts; and handles health
  * Endpoint:
  *   POST /internal/broadcast
  *   Body: { "roomId": "room1", "message": "<json string of the full message>" }
  *
- * What it does:
- *   Iterates Part 1's roomMapping (WebSocket → roomId),
- *   finds all connections whose value matches the target roomId,
- *   and sends the message payload to each one.
  *
  * Why iterate instead of a reverse map?
  *   Part 1's existing roomMapping is Map<WebSocket, String> and we
  *   committed to zero structural changes to existing code. Iterating
  *   is O(n) over active connections — perfectly fine for a chat app.
  */
-public class BroadcastHttpServer {
+public class HttpServer {
 
     private final int port;
-    private final Map<WebSocket, String> roomMapping;
+    private final ConcurrentHashMap<WebSocket, String> roomMapping;
     private final ObjectMapper objectMapper;
-    private HttpServer httpServer;
+    private com.sun.net.httpserver.HttpServer httpServer;
 
-    public BroadcastHttpServer(int port, Map<WebSocket, String> roomMapping) {
+    public HttpServer(int port, ConcurrentHashMap<WebSocket, String> roomMapping) {
         this.port = port;
         this.roomMapping = roomMapping;
         this.objectMapper = new ObjectMapper();
     }
 
     public void start() throws IOException {
-        httpServer = HttpServer.create(new InetSocketAddress(port), 0);
+        httpServer = com.sun.net.httpserver.HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/internal/broadcast", this::handleBroadcast);
+        httpServer.createContext("/health", this::handleHealth);
         httpServer.start();
         System.out.println("BroadcastHttpServer started on port " + port);
     }
@@ -60,7 +53,7 @@ public class BroadcastHttpServer {
         }
     }
 
-    // ── Handler ───────────────────────────────────────────────────────────────
+    // Handler
 
     private void handleBroadcast(HttpExchange exchange) throws IOException {
         if (!"POST".equals(exchange.getRequestMethod())) {
@@ -120,7 +113,11 @@ public class BroadcastHttpServer {
         sendResponse(exchange, 200, response);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    private void handleHealth(HttpExchange exchange) throws IOException {
+        sendResponse(exchange, 200, "{\"status\":\"ok\"}");
+    }
+
+    // Helpers
 
     private void sendResponse(HttpExchange exchange, int statusCode, String body) throws IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);

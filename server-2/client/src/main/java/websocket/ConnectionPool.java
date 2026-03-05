@@ -1,5 +1,7 @@
 package websocket;
 
+import metrics.MetricsCollector;
+
 import java.net.URI;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,13 +15,20 @@ public class ConnectionPool {
     private final Map<String, PooledWebSocketClient> connections;
     private final AtomicInteger connectionCount;
     private final AtomicInteger reconnectCount;
+    private final MetricsCollector metricsCollector;
 
-    public ConnectionPool(String serverHost, int serverPort) {
+    public ConnectionPool(String serverHost, int serverPort, MetricsCollector metricsCollector) {
         this.serverHost = serverHost;
         this.serverPort = serverPort;
         this.connections = new ConcurrentHashMap<>();
         this.connectionCount = new AtomicInteger(0);
         this.reconnectCount = new AtomicInteger(0);
+        this.metricsCollector = metricsCollector;
+    }
+
+    // UPDATE: Overload for backward compatibility (without metrics)
+    public ConnectionPool(String serverHost, int serverPort) {
+        this(serverHost, serverPort, null);
     }
 
     public PooledWebSocketClient getConnection(String roomId) throws Exception {
@@ -40,7 +49,7 @@ public class ConnectionPool {
 
     private PooledWebSocketClient createConnection(String roomId) throws Exception {
         URI serverUri = new URI("ws://" + serverHost + ":" + serverPort + "/chat/" + roomId);
-        PooledWebSocketClient client = new PooledWebSocketClient(serverUri, roomId);
+        PooledWebSocketClient client = new PooledWebSocketClient(serverUri, roomId, metricsCollector);
 
         client.connect();
         connectionCount.incrementAndGet();
