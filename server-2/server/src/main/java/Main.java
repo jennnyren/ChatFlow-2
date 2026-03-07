@@ -1,5 +1,5 @@
+import http.HttpServerManager;
 import rabbitmq.RabbitMQConnectionManager;
-import websocket.HttpServer;
 import websocket.ChatWebSocketServer;
 
 /**
@@ -20,8 +20,10 @@ public class Main {
 
         System.out.println("=== Chat Server (Part 1) Starting ===");
 
+        String rabbitHost = System.getenv().getOrDefault("RABBITMQ_HOST", "172.31.47.205");
+
         RabbitMQConnectionManager rabbitMQConnectionManager = new RabbitMQConnectionManager(
-                "172.31.47.205",
+                rabbitHost,
                 5672,
                 "admin",
                 "rabbitmq",
@@ -39,7 +41,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        HttpServer broadcastHttpServer = new HttpServer(
+        HttpServerManager broadcastHttpServer = new HttpServerManager(
                 BROADCAST_HTTP_PORT, webSocketServer.getRoomMapping());
         broadcastHttpServer.start();
         System.out.println("Broadcast HTTP server started on port " + BROADCAST_HTTP_PORT);
@@ -50,7 +52,11 @@ public class Main {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutdown signal received...");
-            broadcastHttpServer.stop();
+            try {
+                broadcastHttpServer.stop();
+            } catch (Exception e) {
+                System.err.println("Error stopping HTTP server: " + e.getMessage());
+            }
             try {
                 webSocketServer.stop(1000);
             } catch (Exception e) {

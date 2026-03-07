@@ -17,7 +17,7 @@ public class LoadTestClient {
     private static final int WARMUP_MESSAGES_PER_THREAD = 1000;
     private static final int MAIN_THREADS = 64;
 
-    private static final String SERVER_HOST = "54.90.178.93";
+    private static final String SERVER_HOST = "chatflow-lb-1658318388.us-east-1.elb.amazonaws.com";
     private static final int SERVER_PORT = 8080;
 
     public static void main(String[] args) throws Exception {
@@ -30,9 +30,9 @@ public class LoadTestClient {
         //performLittlesLawAnalysis();
 
         LoadTestClient client = new LoadTestClient();
-        //client.runWarmupPhase();
+        client.runWarmupPhase();
 
-        client.runMainPhase();
+        //client.runMainPhase();
     }
 
     private static void performLittlesLawAnalysis() throws Exception {

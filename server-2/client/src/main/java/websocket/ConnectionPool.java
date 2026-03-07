@@ -48,7 +48,10 @@ public class ConnectionPool {
     }
 
     private PooledWebSocketClient createConnection(String roomId) throws Exception {
-        URI serverUri = new URI("ws://" + serverHost + ":" + serverPort + "/chat/" + roomId);
+        // with server port version, for direct instance ip use
+        //URI serverUri = new URI("ws://" + serverHost + ":" + serverPort + "/chat/" + roomId);
+        // without port version, for alb use
+        URI serverUri = new URI("ws://" + serverHost + "/chat/" + roomId);
         PooledWebSocketClient client = new PooledWebSocketClient(serverUri, roomId, metricsCollector);
 
         client.connect();
