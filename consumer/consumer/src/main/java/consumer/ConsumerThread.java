@@ -1,6 +1,5 @@
 package consumer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.*;
 import config.AppConfig;
 import dedup.DeduplicationService;
@@ -9,6 +8,7 @@ import model.ConsumerMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import room.RoomManager;
+import util.JsonUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -36,7 +36,6 @@ public class ConsumerThread implements Runnable {
     private final RoomManager roomManager;
     private final DeduplicationService deduplicationService;
     private final ConsumerMetrics metrics;
-    private final ObjectMapper objectMapper;
 
     private volatile boolean running = true;
 
@@ -51,7 +50,6 @@ public class ConsumerThread implements Runnable {
         this.roomManager = roomManager;
         this.deduplicationService = deduplicationService;
         this.metrics = new ConsumerMetrics(threadId);
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -115,7 +113,7 @@ public class ConsumerThread implements Runnable {
             // Deserialize
             ChatMessage message;
             try {
-                message = objectMapper.readValue(body, ChatMessage.class);
+                message = JsonUtil.fromJson(body, ChatMessage.class);
             } catch (Exception e) {
                 log.error("[{}] Failed to deserialize message from '{}': {}",
                         threadId, queueName, e.getMessage());
