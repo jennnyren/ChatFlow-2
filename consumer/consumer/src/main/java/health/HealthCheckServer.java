@@ -6,12 +6,15 @@ import consumer.ConsumerPool;
 import model.ConsumerMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import util.JsonUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Lightweight HTTP health check server for Part 2.
@@ -49,36 +52,18 @@ public class HealthCheckServer {
 
     private void handleHealth(HttpExchange exchange) throws IOException {
         if (!"GET".equals(exchange.getRequestMethod())) {
-            sendResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
+            sendResponse(exchange, 405, JsonUtil.toJson(Map.of("error", "Method not allowed")));
             return;
         }
 
         List<ConsumerMetrics> threadMetrics = consumerPool.getAllMetrics();
         boolean allHealthy = threadMetrics.stream().allMatch(ConsumerMetrics::isHealthy);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
-        sb.append("  \"status\": \"").append(allHealthy ? "UP" : "DEGRADED").append("\",\n");
-        sb.append("  \"threadCount\": ").append(threadMetrics.size()).append(",\n");
-        sb.append("  \"threads\": [\n");
-
-        for (int i = 0; i < threadMetrics.size(); i++) {
-           ConsumerMetrics m = threadMetrics.get(i);
-            sb.append("    {\n");
-            sb.append("      \"threadId\": \"").append(m.getThreadId()).append("\",\n");
-            sb.append("      \"healthy\": ").append(m.isHealthy()).append(",\n");
-            sb.append("      \"messagesProcessed\": ").append(m.getMessagesProcessed()).append(",\n");
-            sb.append("      \"duplicatesSkipped\": ").append(m.getDuplicatesSkipped()).append(",\n");
-            sb.append("      \"failures\": ").append(m.getMessagesFailedAllRetries()).append(",\n");
-            sb.append("      \"secondsSinceLastHeartbeat\": ").append(m.secondsSinceLastHeartbeat()).append("\n");
-            sb.append("    }");
-            if (i < threadMetrics.size() - 1) sb.append(",");
-            sb.append("\n");
-        }
-
-        sb.append("  ]\n}");
-
-        sendResponse(exchange, 200, sb.toString());
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", allHealthy ? "UP" : "DEGRADED");
+        response.put("threadCount", threadMetrics.size());
+        response.put("threads", threadMetrics);
+        sendResponse(exchange, 200, JsonUtil.toJson(response));
     }
 
     private void handleReady(HttpExchange exchange) throws IOException {
